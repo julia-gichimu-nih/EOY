@@ -1,0 +1,154 @@
+---
+title: "Summary by Category"
+output: html_document
+---
+
+```{r}
+# Load Draft Frozen Files 
+
+files <-  list.files( path = paste0(getwd(), "/", "Assigned Categories"),
+                      pattern = "*.csv",
+                      full.names = T)
+
+file_list <- lapply(files, read_csv)
+
+file.names <- basename(files)
+
+file.names <- str_replace(file.names, "DraftFrozen_", "")
+file.names <- str_replace(file.names, "_12052022.csv", "")
+
+names(file_list) <- file.names
+
+
+new_names <- c("IC", "DraftFrozen_Total")
+
+file_list <- lapply(file_list, setNames, new_names)
+
+
+My_Categories <- bind_rows(file_list , .id = "column_label")
+
+
+My_Categories$DraftFrozen_Total <- str_replace(My_Categories$DraftFrozen_Total, "\\$", "")
+My_Categories$DraftFrozen_Total <- str_replace_all(My_Categories$DraftFrozen_Total, ",", "")
+
+My_Categories<- My_Categories %>% 
+                      rename(Categories = "column_label" ) %>%
+                      mutate_at(vars(DraftFrozen_Total), as.numeric)
+# Merge Acronyms 
+
+IC_and_Abbreviations <- read_excel("IC and Abbreviations.xlsx")
+
+My_Categories <- merge(My_Categories, IC_and_Abbreviations, by = "IC")
+
+My_Categories<- My_Categories %>% relocate(Accronym, .after = "IC")
+
+```
+
+
+```{r}
+# Select my Categories from Andrei's Sheet 
+
+Summary_by_Category <- read_excel("Summary by Category.xlsx")
+
+Summary_by_Category <- Summary_by_Category %>% 
+                          rename(Categories = "Disease Category",
+                               Summary_Dollars = "Total")
+
+
+Assigned_Categories <-  c( 
+                        "Agent Orange & Dioxin",
+                        "Burden of Illness",
+                        "Chemical Preparedness and Decontamination Activities",
+                        "Clinical Research",
+                        "Clinical Trials and Supportive Activities",
+                        "Coronaviruses Diagnostics and Prognostics",
+                        "Cost Effectiveness Research",
+                        "Comparative Effectiveness Research",
+                        "Effectiveness Research",
+                        "Data Repositories and Knowledgebases", 
+                        "Health Services",
+                        "Lead Poisoning",
+                        "Machine Learning and Artificial Intelligence",
+                        "Networking and Information Technology R&D (NITRD)",
+                        "Patient Safety")
+
+Summary_by_Category <- Summary_by_Category %>% 
+                            filter(Categories %in% Assigned_Categories) 
+
+```
+
+# Check Grand Totals for Categories match up 
+
+```{r}
+
+# Check to see that Dollars from Draft Frozen match dollars for RCDC Summary (Andrei's sheet)
+
+# Add up all dollars from each IC to get category total
+DraftFrozen_GrandTotal <- My_Categories %>% 
+                             group_by(Categories) %>% 
+                             summarise(DraftFrozen_Total = sum(DraftFrozen_Total))
+
+
+Category_Totals_Check <- merge(DraftFrozen_GrandTotal, Summary_by_Category, by = "Categories" )
+
+# Compare Draft frozen category totals to RCDC Summary Totals 
+Category_Totals_Check <- Category_Totals_Check %>% 
+                            mutate(Dollar_test = case_when(
+                                      Summary_Dollars == DraftFrozen_Total ~ "True",
+                                      Summary_Dollars != DraftFrozen_Total ~ "False"))
+      
+      
+```
+
+
+# Check that Totals by Category and IC match up 
+
+```{r}
+# List each dollar amounts for each category by IC 
+
+Summary_by_Category_By_IC <- read_excel("Summary by Category By IC.xlsx")
+
+Summary_by_Category_By_IC <-  Summary_by_Category_By_IC %>% 
+                                rename(Categories = "Disease Category")
+
+
+Summary_by_Category_By_IC <- Summary_by_Category_By_IC %>% 
+                                filter(Categories %in% Assigned_Categories) 
+
+Summary_by_Category_By_IC <- Summary_by_Category_By_IC  %>% 
+                                pivot_longer(cols = 3:29,
+                                             names_to = "Accronym",
+                                             values_to = "Summary_Dollars")
+                          
+
+```
+
+
+```{r}
+# Line by line comparison of Category + IC 
+
+Category_by_IC_Check <- merge(My_Categories_IC_Summary, My_Categories, by = c("Categories", "Accronym")) 
+
+
+
+Category_by_IC_Check  <- Category_by_IC_Check  %>% 
+                            mutate(Dollar_test = case_when(
+                                      Summary_Dollars == DraftFrozen_Total ~ "True",
+                                      Summary_Dollars != DraftFrozen_Total ~ "False"))
+
+```
+
+
+```{r}
+writexl::write_xlsx(list(
+                         NCATS_Check = merged_NCATS,
+                         NINR_Check = merged_NINR, 
+                         NLM_Check = merged_NLM,  
+                         Summary_by_Category_by_IC_Check = Category_by_IC_Check, 
+                         Summary_by_Category_Check = Category_Totals_Check  
+                         ),
+                   path = paste(getwd(), "/", "Draft_Frozen_Check_JG", ".xlsx", sep = ""))
+
+```
+
+

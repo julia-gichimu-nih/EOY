@@ -1,0 +1,103 @@
+---
+title: "FY22 Draft Frozen Data Checks"
+output: html_document
+---
+
+
+# Funding of Categories by IC 
+
+```{r message=FALSE, warning=FALSE}
+library('tidyverse')
+```
+
+
+```{r}
+
+library(readxl)
+
+Category_by_IC <- read_excel("Summary by Category by IC.xlsx")
+Category_by_IC <- Category_by_IC %>% 
+                        rename( Categories = "Disease Category" ) 
+
+DraftFrozen_Data_NR <- read_excel("Assigned Ics/Draft_Frozen_NR_12052022.xlsx")
+DraftFrozen_Data_TR <- read_excel("Assigned Ics/Draft_Frozen_TR_12052022.xlsx")
+DraftFrozen_Data_LM <- read_excel("Assigned Ics/Draft_Frozen_LM_12052022.xlsx")
+
+```
+
+
+
+## NINR(NR)
+
+```{r}
+RCDC_Summary_NR <- Category_by_IC %>%
+                      select(WebStatus, Categories, NINR) %>% 
+                      rename(Summary_Dollars_NR = "NINR" )
+
+DraftFrozen_Data_NR <- DraftFrozen_Data_NR %>% 
+                                rename(Categories = "Summary",
+                                       DraftFrozen_Dollars_NR = "Sum of Project Dollars") 
+
+merged_NINR <- merge(RCDC_Summary_NR, DraftFrozen_Data_NR, by = "Categories", all = TRUE)
+
+merged_NINR <- merged_NINR %>%
+                    replace(is.na(.), 0)
+
+merged_NINR <- merged_NINR %>% 
+                  mutate(Dollar_test = case_when(
+                                            DraftFrozen_Dollars_NR == Summary_Dollars_NR ~ "OK",
+                                            TRUE ~ "Error"
+                                          ))
+                                                
+
+```
+
+
+## NCATS (TR)
+
+```{r}
+RCDC_Summary_TR <- Category_by_IC %>%
+                       select(WebStatus, Categories, NCATS) %>% 
+                      rename(Summary_Dollars_TR = "NCATS" )
+
+DraftFrozen_Data_TR <- DraftFrozen_Data_TR %>% 
+                                rename(Categories = "Summary",
+                                       DraftFrozen_Dollars_TR = "Sum of Project Dollars") 
+
+merged_NCATS <- merge(RCDC_Summary_TR, DraftFrozen_Data_TR, by = "Categories", all = TRUE)
+
+merged_NCATS <- merged_NCATS %>%
+                    replace(is.na(.), 0)
+
+merged_NCATS <- merged_NCATS %>% 
+                  mutate(Dollar_test = case_when(
+                                            DraftFrozen_Dollars_TR == Summary_Dollars_TR ~ "OK",
+                                            TRUE ~ "Error"
+                                          ))
+
+```
+
+
+## NLM (LM)
+
+```{r}
+RCDC_Summary_LM <- Category_by_IC %>%
+                      select(WebStatus, Categories, NLM) %>% 
+                      rename(Summary_Dollars_LM = "NLM" )
+
+DraftFrozen_Data_LM <- DraftFrozen_Data_LM %>% 
+                                rename(Categories = "Summary",
+                                       DraftFrozen_Dollars_LM = "Sum of Project Dollars") 
+
+merged_NLM <- merge(RCDC_Summary_LM, DraftFrozen_Data_LM, by = "Categories", all = TRUE)
+
+merged_NLM <- merged_NLM %>%
+                    replace(is.na(.), 0)
+
+merged_NLM <- merged_NLM %>% 
+                  mutate(Dollar_test = case_when(
+                                            DraftFrozen_Dollars_LM == Summary_Dollars_LM ~ "OK",
+                                            TRUE ~ "Error"
+                                          ))
+
+```
