@@ -1,0 +1,112 @@
+select distinct p.fy, p.appl_class_code, d.dc_name, a.appl_id, p.subproject_id SubProj,
+  p.appl_type_code||p.grant_num ProjNum,
+  p.admin_phs_org_code, p.project_title
+--select count(*)
+from appl_disease_categories_t a, disease_categories_t d,
+ appls_t p
+where a.dc_id = d.dc_id
+ and a.APPL_ID=p.appl_id
+ and d.dc_name = 'Stem Cell Research'
+ and d.dc_assigned_fy=2022
+ and ( (p.appl_status_code in ('03','05','06','99'))
+       OR
+     (p.appl_class_code = 'I') )
+ and p.fy=2022
+-- and substr(p.council_meeting_date,5,2) <> '00'
+ and a.appl_id not in (
+    select t.appl_id
+    from KMDC_USER_TEST_CMNTS_T t
+    where t.dc_id = a.dc_id
+-- added 09 (marked for review) on 10/26/2010
+    and t.APPL_DC_CMNT_TYPE_CODE in ('09','10'))
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (804,802,798,797,808,
+    801,803,800,799,805) and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE = '02')
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (796)
+    and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE <> '02')
+ and exists
+ (SELECT 1 from rcdc_reportable_fundings_t rrf
+   WHERE rrf.appl_id=a.appl_id
+     AND REPORTABLE_FLAG='Y')
+UNION
+select distinct p.fy, p.appl_class_code, d.dc_name, a.appl_id, p.subproject_id SubProj,
+  p.appl_type_code||p.grant_num ProjNum,
+  p.admin_phs_org_code, p.project_title
+--select count(*)
+from appl_disease_categories_t a, disease_categories_t d, appls_t p
+where a.dc_id = d.dc_id
+ and a.APPL_ID=p.appl_id
+ and d.dc_name = 'Nanotechnology'
+ and d.dc_assigned_fy=2022
+ and ( (p.appl_status_code in ('03','05','06','99'))
+       OR
+     (p.appl_class_code = 'I') )
+ and p.fy=2022
+-- and substr(p.council_meeting_date,5,2) <> '00'
+ and a.appl_id not in (
+    select t.appl_id
+    from KMDC_USER_TEST_CMNTS_T t
+    where t.dc_id = a.dc_id
+    and t.APPL_DC_CMNT_TYPE_CODE in ('09','10'))
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (2450,2451,2452,2453,2454,2456,2457,2458,2459,4351,4352)
+    and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE = '02')
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (496)
+    and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE <> '02')
+ and exists
+ (SELECT 1 from rcdc_reportable_fundings_t rrf
+   WHERE rrf.appl_id=a.appl_id
+     AND REPORTABLE_FLAG='Y')
+UNION
+-- NITRD
+select distinct p.fy, p.appl_class_code, d.dc_name, a.appl_id, p.subproject_id SubProj,
+  p.appl_type_code||p.grant_num ProjNum,
+  p.admin_phs_org_code, p.project_title
+--select count(*)
+from appl_disease_categories_t a, disease_categories_t d, appls_t p
+where a.dc_id = d.dc_id
+ and a.APPL_ID=p.appl_id
+-- Networking and Information Technology RandD
+ and d.dc_global_id in (329)
+ and d.dc_assigned_fy=2022
+ and ( (p.appl_status_code in ('03','05','06','99'))
+       OR
+     (p.appl_class_code = 'I') )
+ and p.fy=2022
+-- and substr(p.council_meeting_date,5,2) <> '00'
+ and a.appl_id not in (
+    select t.appl_id
+    from KMDC_USER_TEST_CMNTS_T t
+    where t.dc_id = a.dc_id
+    and t.APPL_DC_CMNT_TYPE_CODE in ('09','10'))
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (516,518,3710,3711,3712,3713,3714,3715,3716,511,4593)
+    and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE = '02')
+ and a.appl_id not in (
+    select i.appl_id
+    from appl_ic_disease_categories_t i
+    where i.dc_id in (select dc_id from disease_categories_t where dc_global_id in (329)
+    and dc_assigned_fy in (select max (dc_assigned_fy) from disease_categories_t))
+    and i.APPL_IC_DC_TYPE_CODE <> '02')
+ and exists
+ (SELECT 1 from rcdc_reportable_fundings_t rrf
+   WHERE rrf.appl_id=a.appl_id
+     AND REPORTABLE_FLAG='Y')
+order by 5

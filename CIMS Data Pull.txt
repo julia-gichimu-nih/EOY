@@ -1,0 +1,7 @@
+"select rp.fy, rp.appl_id, funding_ic, project_number, ap.contract_doc_num, mod_num, release_num, project_dollars, can
+from rcdc_reportable_fundings_t rp, appls_t ap
+where ap.appl_id=rp.appl_id
+and funding_mechanism in ('Contract','IAA')
+and rp.fy=2021
+and rp.project_number not like '%-0'
+and reportable_flag = 'Y'"
